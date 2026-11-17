@@ -1,0 +1,23 @@
+{
+  "filas": 305,
+  "columnas": 7,
+  "duplicados": 5,
+  "valores_faltantes": {
+    "fecha": 0,
+    "categoria": 7,
+    "sucursal": 0,
+    "precio": 10,
+    "promocion": 0,
+    "inventario": 0,
+    "demanda": 0
+  },
+  "tipos": {
+    "fecha": "datetime64[ns]",
+    "categoria": "object",
+    "sucursal": "object",
+    "precio": "float64",
+    "promocion": "int64",
+    "inventario": "int64",
+    "demanda": "float64"
+  }
+}
