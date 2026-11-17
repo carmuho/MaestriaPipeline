@@ -12,9 +12,9 @@
     "demanda": 0
   },
   "tipos": {
-    "fecha": "datetime64[ns]",
-    "categoria": "object",
-    "sucursal": "object",
+    "fecha": "datetime64[us]",
+    "categoria": "str",
+    "sucursal": "str",
     "precio": "float64",
     "promocion": "int64",
     "inventario": "int64",

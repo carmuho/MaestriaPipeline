@@ -1,36 +1,45 @@
 from pathlib import Path
 import logging
 
-from src.data_loader import cargar_csv
-from src.quality import revisar_calidad
+from src.data_loader import DataLoader
+from src.quality import Quality
 from src.cleaning import limpiar_datos
-from src.preprocessing import crear_variables, separar_xy
-from src.visualization import generar_visualizaciones
-from src.reporting import guardar_json
+from src.preprocessing import Preprocessing
+from src.visualization import Visualization
+from src.reporting import Reporting
 
-BASE = Path(__file__).parent
+BASE_PATH = Path(__file__).parent
 logging.basicConfig(
-    filename=BASE / "outputs" / "pipeline.log",
+    filename=BASE_PATH / "outputs" / "pipeline.log",
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
 )
 
 
 def ejecutar() -> None:
-    """Ejecuta el alcance funcional del Avance 2, sin entrenar modelos."""
-    ruta = BASE / "data" / "ventas_boreal_simulado.csv"
-    bruto = cargar_csv(ruta)
-    calidad_antes = revisar_calidad(bruto)
-    guardar_json(calidad_antes, BASE / "outputs/reports/quality_before.json")
+  
+    ruta = BASE_PATH / "data" / "ventas_boreal_simulado.csv"
+    datos_originales = DataLoader(ruta).load()
+    visualization = Visualization()
+    reporting = Reporting()
+    quality = Quality()
+    
+    calidad_antes = quality.revisar_calidad(datos_originales)
+    visualization.generar_visualizaciones(
+        datos_originales,
+        BASE_PATH / "outputs/figures/Datos_Originales",
+    )
+    reporting.guardar_json(calidad_antes, BASE_PATH / "outputs/reports/quality_before.json")
 
-    limpio = limpiar_datos(bruto)
-    calidad_despues = revisar_calidad(limpio)
-    guardar_json(calidad_despues, BASE / "outputs/reports/quality_after.json")
+    datos_limpios = limpiar_datos(datos_originales)
+    calidad_despues = quality.revisar_calidad(datos_limpios)
+    reporting.guardar_json(calidad_despues, BASE_PATH / "outputs/reports/quality_after.json")
 
-    preparado = crear_variables(limpio)
-    X, y = separar_xy(preparado)
-    preparado.to_csv(BASE / "outputs/reports/prepared_data.csv", index=False)
-    generar_visualizaciones(limpio, BASE / "outputs/figures")
+    preprocessing = Preprocessing()
+    preparado = preprocessing.crear_variables(datos_limpios)
+    X, y = preprocessing.separar_xy(preparado)
+    preparado.to_csv(BASE_PATH / "outputs/reports/prepared_data.csv", index=False)
+    visualization.generar_visualizaciones(datos_limpios, BASE_PATH / "outputs/figures")
 
     logging.info("Pipeline preliminar completado: %s filas, %s predictores", len(preparado), X.shape[1])
     print("Calidad antes:", calidad_antes)
