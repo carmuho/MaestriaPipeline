@@ -31,6 +31,8 @@ class UnsupportedDataFormatError(DataLoaderError, ValueError):
 
 
 def _validate_path(ruta: Path | None, fuente: str) -> Path:
+    # Centraliza la validación para que todos los lectores reporten 
+    # rutas faltantes de forma consistente.
     if ruta is None:
         raise ValueError(f"Debe indicar una ruta para cargar {fuente}.")
     if not ruta.exists():
@@ -54,6 +56,8 @@ class _CSVReader(_SourceReader):
     def load(self) -> pd.DataFrame:
         ruta = _validate_path(self.ruta, "el archivo CSV")
         try:
+            # La columna de fecha se convierte durante la lectura para 
+            # devolverla lista para su uso.
             return pd.read_csv(ruta, parse_dates=["fecha"])
         except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError) as exc:
             raise DataLoaderError(f"No se pudo leer el archivo CSV '{ruta}'.") from exc
@@ -82,6 +86,7 @@ class _TXTReader(_SourceReader):
             return pd.read_csv(
                 ruta,
                 sep=self.separador,
+                # Sin separador explícito, el motor Python permite detectar el delimitador automáticamente.
                 engine="python" if self.separador is None else "c",
             )
         except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError) as exc:
@@ -103,6 +108,7 @@ class _SQLReader(_SourceReader):
         if not self.consulta:
             raise ValueError("Debe indicar una consulta SQL.")
         if self.conexion is not None:
+            # Una conexión proporcionada por el llamador debe seguir abierta después de la lectura.
             return self._execute(self.conexion)
 
         ruta = _validate_path(self.ruta, "la base de datos SQLite")
@@ -165,6 +171,7 @@ class DataLoader:
         self.ruta = Path(ruta) if ruta is not None else None
         extension = self.ruta.suffix.lower().lstrip(".") if self.ruta is not None else None
         formatos_sqlite = {"db", "sqlite", "sqlite3"}
+        # Si no se especifica formato, se infiere de la extensión; las extensiones SQLite se tratan como SQL.
         self.formato = (
             formato.lower().lstrip(".")
             if formato is not None
