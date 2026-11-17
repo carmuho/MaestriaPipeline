@@ -46,7 +46,7 @@ class _SourceReader(ABC):
 
     @abstractmethod
     def load(self) -> pd.DataFrame:
-        """Lee la fuente y devuelve su contenido como DataFrame."""
+        """Lee la fuente de datos y devuelve su contenido como DataFrame."""
 
 
 class _CSVReader(_SourceReader):
